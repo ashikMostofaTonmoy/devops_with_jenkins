@@ -13,4 +13,5 @@
 - git checkout demo-branch
 - git merge demo-branch
     # 1st go to ‘master’ branch or desired branch using “git checkout” then run the command
-- git commit -a -m "<message>"
+- git commit -a -m "<message>" 
+    # automatically add tracked files and commit them. easier solution to using multiple commands
