@@ -3,11 +3,15 @@
 - git add origine <link> 
     # mainly the https link. if we want to add the ssh link it can be also added.
     but before that local ssh should be configured
--  
-
 - Git pull
 - Git push
 - git add <filename> to add file tobe tracked
 - git add . # to add all file in the directory
 - git status # to check status
 - git commit -m “<message>”
+- git branch demo-branch
+- git checkout demo-branch
+- git merge demo-branch
+    # 1st go to ‘master’ branch or desired branch using “git checkout” then run the command
+- git commit -a -m "<message>" 
+    # automatically add tracked files and commit them. easier solution to using multiple commands
