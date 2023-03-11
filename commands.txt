@@ -11,3 +11,5 @@
 - git add . # to add all file in the directory
 - git status # to check status
 - git commit -m “<message>”
+- git branch demo-branch
+- git checkout demo-branch
