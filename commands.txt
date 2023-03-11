@@ -1,5 +1,13 @@
-1. git add origine <link> 
+- git init
+    # initialize git locally
+- git add origine <link> 
     # mainly the https link. if we want to add the ssh link it can be also added.
     but before that local ssh should be configured
-2. 
+-  
 
+- Git pull
+- Git push
+- git add <filename> to add file tobe tracked
+- git add . # to add all file in the directory
+- git status # to check status
+- git commit -m “<message>”
