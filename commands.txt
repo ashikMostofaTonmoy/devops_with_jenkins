@@ -1,0 +1,5 @@
+1. git add origine <link> 
+    # mainly the https link. if we want to add the ssh link it can be also added.
+    but before that local ssh should be configured
+2. 
+
