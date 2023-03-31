@@ -107,3 +107,19 @@ docker-compose -f {filename} up -d # {filename} = mongo.yaml, -d for detach mode
 
 docker-compose -f {filename} down # to stop container 
 ```
+
+### Create Docker File
+
+Some demo docker file and their reasons.
+
+ ```sh
+ From node:{tag}
+
+ ENV MONGO_DB_USERNAME=admin \ #envioronment variavles 
+     MONGO_DB_PWD=password 
+     # Though best practice is define envioronment variables. so that we can change the value during  runtime
+
+RUN mkdir -p /home/app 
+    # RUN  command runs during container creation. 
+    #CMD command runs after container creation.
+ ```
