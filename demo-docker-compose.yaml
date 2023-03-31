@@ -1,0 +1,25 @@
+version: '3.1'
+
+services:
+
+  mongo:
+    # container name
+    image: mongo # image:tag
+    restart: always
+    environment:
+      # envioronment variables
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  mongo-express:
+    # container name
+    image: mongo-express # image:tag
+    restart: always
+    ports:
+      # port mapping
+      - 8081:8081 # {host:container}
+    environment:
+      # envioronment variables
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/

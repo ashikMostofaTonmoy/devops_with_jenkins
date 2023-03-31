@@ -69,3 +69,41 @@ docker run -d \
  -e ME_CONFIG_BASICAUTH_PASSWORD="fairly long password" \
  mongo-express:{tag}
 ```
+
+### Docker Compose
+
+Some demo for docker compose
+
+```sh
+version: '3.1'
+
+services:
+
+  mongo: # container name
+    image: mongo # image:tag
+    restart: always
+    environment: # envioronment variables
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  mongo-express: # container name
+    image: mongo-express # image:tag
+    restart: always
+    ports: # port mapping
+      - 8081:8081 # {host:container}
+    environment: # envioronment variables
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+
+```
+
+Docker-compose by default creates a seperate networt. thats why we don't need to create/declear seperate network for this type of task where we needed to create seperate network during only using `docker run`.
+
+Run Compose file by:
+
+```sh
+docker-compose -f {filename} up -d # {filename} = mongo.yaml, -d for detach mode
+
+docker-compose -f {filename} down # to stop container 
+```
