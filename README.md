@@ -121,5 +121,12 @@ Some demo docker file and their reasons.
 
 RUN mkdir -p /home/app 
     # RUN  command runs during container creation. 
-    #CMD command runs after container creation.
+    # CMD command runs after container creation.
+    # There may be seperate `RUN` commands but only one `CMD` command
+COPY . /home/app 
+    # here . represents current directory '/home/app' represents directory in container
+    # copy command runs on host machine , not in container 
+CMD ['node','server.js']
+    # this runs as entypoint command.
+
  ```
