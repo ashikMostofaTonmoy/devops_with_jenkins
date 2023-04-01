@@ -112,10 +112,10 @@ docker-compose -f {filename} down # to stop container
 
 Some demo docker file and their reasons.
 
- ```sh
- From node:{tag}
+```sh
+From node:{tag}
 
- ENV MONGO_DB_USERNAME=admin \ #envioronment variavles 
+ENV MONGO_DB_USERNAME=admin \ #envioronment variavles 
      MONGO_DB_PWD=password 
      # Though best practice is define envioronment variables. so that we can change the value during  runtime
 
@@ -135,5 +135,16 @@ CMD ['node','server.js']
 To tag Image
 
 ```sh
-docker build -t {custome-name}:{tag} . # here . represents current folder
+docker build -t {custome-name}:{tag} . 
+  # here . represents current folder
+docker tag {currentimage}:{tag} {destination-image}:{tag}
+```
+
+### Pushing to registry
+
+To push to the private docker registry first tag the image with `{remote-docker-domain}/{imagename}:{tag}` then use
+
+```sh
+docker login 
+cat ~/my_password.txt | docker login --username foo --password-stdin
 ```

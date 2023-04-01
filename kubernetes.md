@@ -1,4 +1,4 @@
-# Kubernatis (K8S)
+# Kubernetes (K8S)
 
 * to check everythin locally , install `minikube` , a choosen hypervisor according to the os you are on
 * install `kubectl` if not installed by default
@@ -17,6 +17,61 @@ minikube status
 
 > `kubectl cli` for configuring minikube cluster
 > `minikube cli` for up/deletiog cluster
+
+## Create kubernetes cluster on Redhat based system
+
+See <https://www.linuxtechi.com/how-to-install-kubernetes-cluster-rhel/>
+
+**Step 1: Disable swap space**
+
+For best performance, Kubernetes requires that swap is disabled on the host system. This is because memory swapping can significantly lead to instability and performance degradation.
+
+To disable swap space, run the command:
+
+```sh
+sudo swapoff -a
+```
+
+**Step 2: Disable SELinux**
+Additionally, we need to disable SELinux and set it to ‘permissive’ in order to allow smooth communication between the nodes and the pods.
+
+To achieve this, open the SELinux configuration file.
+
+```sh
+sudo vi /etc/selinux/config
+```
+
+Change the SELINUX value from enforcing to permissive.
+
+```sh
+SELINUX=permissive
+```
+
+Alternatively, you use the sed command as follows.
+
+```sh
+sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+```
+
+**Step 3 Configure networking in master and worker node**
+Some additional network configuration is required for your master and worker nodes to communicate effectively. On each node, edit the  `/etc/hosts` file.
+
+```sh
+sudo vi /etc/hosts
+```
+
+Next, update the entries as shown
+
+```sh
+10.128.15.228 master-node-k8          // For the Master node
+10.128.15.230 worker-node-1-k8       //  For the Worker node
+```
+
+Save and exit the configuration file. Next, install the traffic control utility package:
+
+```sh
+sudo dnf install -y iproute-tc
+```
 
 ## Some basic commands for K8S
 
