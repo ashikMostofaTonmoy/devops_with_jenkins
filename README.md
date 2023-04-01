@@ -128,5 +128,12 @@ COPY . /home/app
     # copy command runs on host machine , not in container 
 CMD ['node','server.js']
     # this runs as entypoint command.
+```
 
- ```
+### Tagging Docker Images
+
+To tag Image
+
+```sh
+docker build -t {custome-name}:{tag} . # here . represents current folder
+```
