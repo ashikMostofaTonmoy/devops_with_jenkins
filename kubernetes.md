@@ -21,13 +21,16 @@ minikube status
 ## Create kubernetes cluster on Redhat based system
 
 See Reference:
+
 1. <https://www.linuxtechi.com/how-to-install-kubernetes-cluster-rhel/>
-2. https://www.golinuxcloud.com/deploy-multi-node-k8s-cluster-rocky-linux-8/
-3. https://www.centlinux.com/2022/11/install-kubernetes-master-node-rocky-linux.html
-4. https://wiki.gentoo.org/wiki/SELinux/Tutorials/Permissive_versus_enforcing#:~:text=The%20use%20of%20the%20setenforce%20command%20is%20useful,to%20enable%20enforcing%20mode.%20The%20selinux%20configuration%20file
-5. https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
-6. https://docs.rockylinux.org/guides/network/basic_network_configuration/
-7. https://www.golinuxcloud.com/set-static-ip-rocky-linux-examples/
+2. <https://www.golinuxcloud.com/deploy-multi-node-k8s-cluster-rocky-linux-8/>
+3. <https://www.centlinux.com/2022/11/install-kubernetes-master-node-rocky-linux.html>
+4. <https://wiki.gentoo.org/wiki/SELinux/Tutorials/Permissive_versus_enforcing#:~:text=The%20use%20of%20the%20setenforce%20command%20is%20useful>,to%20enable%20enforcing%20mode.%20The%20selinux%20configuration%20file
+5. <https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/>
+6. <https://docs.rockylinux.org/guides/network/basic_network_configuration/>
+7. <https://www.golinuxcloud.com/set-static-ip-rocky-linux-examples/>
+8. <https://www.centlinux.com/2022/11/install-kubernetes-master-node-rocky-linux.html>
+9. <https://github.com/kubernetes/kubernetes/issues/115824>
 
 **Step 1: Disable swap space**
 For best performance, Kubernetes requires that swap is disabled on the host system. This is because memory swapping can significantly lead to instability and performance degradation.
@@ -107,7 +110,6 @@ See the `docker-installetion-rockylinux.md` file to not install docker but You'l
 ```sh
 sudo dnf -y install containerd.io
 ```
-
 
 ```sh
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
