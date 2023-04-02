@@ -1,6 +1,6 @@
 # Kubernetes (K8S)
 
-* to check everythin locally , install `minikube` , a choosen hypervisor according to the os you are on
+* to check everything locally , install `minikube` , a choosen hypervisor according to the os you are on
 * install `kubectl` if not installed by default
 * you may need to restart/logout the pc to take the change effect
   
@@ -20,7 +20,14 @@ minikube status
 
 ## Create kubernetes cluster on Redhat based system
 
-See <https://www.linuxtechi.com/how-to-install-kubernetes-cluster-rhel/>
+See Reference:
+1. <https://www.linuxtechi.com/how-to-install-kubernetes-cluster-rhel/>
+2. https://www.golinuxcloud.com/deploy-multi-node-k8s-cluster-rocky-linux-8/
+3. https://www.centlinux.com/2022/11/install-kubernetes-master-node-rocky-linux.html
+4. https://wiki.gentoo.org/wiki/SELinux/Tutorials/Permissive_versus_enforcing#:~:text=The%20use%20of%20the%20setenforce%20command%20is%20useful,to%20enable%20enforcing%20mode.%20The%20selinux%20configuration%20file
+5. https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+6. https://docs.rockylinux.org/guides/network/basic_network_configuration/
+7. https://www.golinuxcloud.com/set-static-ip-rocky-linux-examples/
 
 **Step 1: Disable swap space**
 For best performance, Kubernetes requires that swap is disabled on the host system. This is because memory swapping can significantly lead to instability and performance degradation.
@@ -94,8 +101,31 @@ sudo firewall-cmd --permanent --add-port=30000-32767/tcp
 sudo firewall-cmd --reload
 ```
 
-**Step 5: Install Docker**
-See the `docker-installetion-rockylinux.md` file to install docker
+**Step 5:  Install `Containerd`**
+See the `docker-installetion-rockylinux.md` file to not install docker but You'll need the repo to install containerd.
+
+```sh
+sudo dnf -y install containerd.io
+```
+
+
+```sh
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+sudo yum install -y kubectl
+```
+
+```sh
+kubectl version --output=json
+# or
+kubectl version --output=yaml
+```
 
 ## Some basic commands for K8S
 
