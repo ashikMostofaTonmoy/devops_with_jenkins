@@ -41,12 +41,25 @@ To disable swap space, run the command:
 sudo swapoff -a
 ```
 
+To make the changes persistent, edit the `/etc/fstab` file and remove or comment out the line with the swap entry and save the changes
+
+```sh
+sudo vi /etc/fstab
+```
+
+after commentsthis should look like this
+
+```sh
+#/dev/mapper/rl-swap     none                    swap    defaults        0 0
+```
+
 **Step 2: Disable SELinux**
 Additionally, we need to disable SELinux and set it to ‘permissive’ in order to allow smooth communication between the nodes and the pods.
 
 To achieve this, open the SELinux configuration file.
 
 ```sh
+sudo setenforce 0
 sudo vi /etc/selinux/config
 ```
 
@@ -59,6 +72,7 @@ SELINUX=permissive
 Alternatively, you use the sed command as follows.
 
 ```sh
+sudo setenforce 0
 sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 ```
 
@@ -76,14 +90,49 @@ Next, update the entries as shown
 10.128.15.230 worker-node-1-k8       //  For the Worker node
 ```
 
+Alternativly we can do it like this:
+
+```sh
+sudo hostnamectl set-hostname master # for master node
+sudo hostnamectl set-hostname worker-1 # for worker node
+
+sudo cat <<EOF>> /etc/hosts
+192.168.100.234 master
+192.168.100.235 worker01
+192.168.100.236 worker02
+EOF
+
+# or like this
+sudo echo 192.168.116.131 kubemaster-01.centlinux.com kubemaster-01 >> /etc/hosts
+```
+
 Save and exit the configuration file. Next, install the traffic control utility package:
 
 ```sh
 sudo dnf install -y iproute-tc
 ```
 
+**Update system**
+Update all the nodes you intend to use in the cluster, to have the latest packages and latest kernel patches. Linux Kernel packages may be updated by the above command. You are advised to reboot your nodes for some changes to take effect. Therefore, reboot your Linux server before moving forward.
+
+```sh
+sudo dnf -y update && sudo systemctl reboot
+```
+
 **Step 4: Allow firewall rules for k8s**
 For seamless communication between the Master and worker node, you need to configure the firewall and allow some pertinent ports and services as outlined below.
+
+Kubernetes uses following service ports at Master node.
+
+Port | Protocol | Purpose
+---|---|---
+6443|TCP | Kubernetes API server
+2379-2380 | TCP |etcd server client API
+10250| TCP | Kubelet API
+10251| TCP |kube-scheduler
+10252| TCP | kube-controller-manager
+
+Therefore, you need to allow these service ports in Linux firewall.
 
 On Master node, allow following ports,
 
@@ -104,12 +153,129 @@ sudo firewall-cmd --permanent --add-port=30000-32767/tcp
 sudo firewall-cmd --reload
 ```
 
-**Step 5:  Install `Containerd`**
-See the `docker-installetion-rockylinux.md` file to not install docker but You'll need the repo to install containerd.
+```sh
+sudo firewall-cmd --permanent --add-port={6443,2379,2380,10250,10251,10252}/tcp
+sudo firewall-cmd --reload
+
+```
+
+**Step 5:  Install `Containerd` container runtime**
+
+To achieve this, we need to configure the prerequisites as follows:
+
+First, create a modules configuration file for Kubernetes.
+
+**Configure persistent modules**
 
 ```sh
+sudo tee /etc/modules-load.d/containerd.conf <<EOF
+overlay
+br_netfilter
+EOF
+```
+
+Alternatively,
+
+```sh
+sudo vi /etc/modules-load.d/k8s.conf
+```
+
+Add these lines and save the changes
+
+```sh
+overlay
+br_netfilter
+```
+
+**Then load both modules using the modprobe command.**
+
+```sh
+sudo modprobe overlay
+sudo modprobe br_netfilter
+```
+
+**configure the required sysctl parameters as follows**
+First, create a modules configuration file for Kubernetes.
+
+```sh
+sudo vi /etc/sysctl.d/k8s.conf
+```
+
+Add the following lines:
+
+```sh
+net.bridge.bridge-nf-call-iptables  = 1
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+```
+
+Or , it can be done by this
+
+```sh
+sudo tee /etc/sysctl.d/k8s.conf<<EOF
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+```
+
+```sh
+# not recommended
+sudo tee /etc/sysctl.d/kubernetes.conf<<EOF
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+```
+
+**Reload sysctl**
+Reload Kernel parameter configuration files with above changes.
+
+```sh
+sudo sysctl --system
+```
+
+**Install dependencies**
+Don't know why /where we need this
+
+```sh
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+```
+
+See the `docker-installetion-rockylinux.md` file to install docker.
+
+```sh
+sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 sudo dnf -y install containerd.io
 ```
+
+After a successful installation, create a configuration directory for cotainerd
+
+```sh
+sudo mkdir -p /etc/containerd 
+# sudo containerd config default > /etc/containerd/config.toml
+```
+
+After installation, backup the original containerd configuration file and generate a new file as follows.
+
+```sh
+sudo mv /etc/containerd/config.toml /etc/containerd/config.toml.originalbackup
+containerd config default > /etc/containerd/config.toml
+```
+
+Edit Containerd configuration file by using vim text editor.
+
+vi /etc/containerd/config.toml
+Locate and set SystemdCgroup parameter in this file, to enable the systemd cgroup driver for Containerd runtime.
+
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+  ...
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+    SystemdCgroup = true
+Enable and start Containerd service.
+
+# systemctl enable --now containerd.service
+Created symlink /etc/systemd/system/multi-user.target.wants/containerd.service → /usr/lib/systemd/system/containerd.service.
 
 ```sh
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
