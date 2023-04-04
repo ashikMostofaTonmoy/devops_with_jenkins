@@ -342,6 +342,13 @@ kubeadm token create --print-join-command
 ```
 
 **Initialize Kubeadm On Master Node To Setup Control Plane**
+Bootstrap the cluster by running the kubeadm init command with the following flags:
+
+* --control-plane-endpoint : set the shared endpoint for all control-plane nodes such as  DNS/IP
+* --pod-network-cidr : Used to set a Pod network add-on CIDR
+* --cri-socket : Use this if you have more than one container runtime to set runtime socket path. In our case, we have installed only containerd runtime.
+* --apiserver-advertise-address : Set advertise address for this particular control-plane node's API server
+
 Here you need to consider two options.
 
 Master Node with Private IP: If you have nodes with only private IP addresses and the API server would be accessed over the private IP of the master node.
@@ -375,24 +382,51 @@ Now, initialize the master node control plane configurations using the kubeadm c
 For a Private IP address-based setup use the following init command.
 
 ```sh
-sudo kubeadm init --apiserver-advertise-address=$IPADDR  --apiserver-cert-extra-sans=$IPADDR  --pod-network-cidr=$POD_CIDR --node-name $NODENAME --ignore-preflight-errors Swap
+sudo kubeadm init \
+  --apiserver-advertise-address=$IPADDR \ 
+  --apiserver-cert-extra-sans=$IPADDR  \
+  --pod-network-cidr=$POD_CIDR \
+  --node-name $NODENAME \
+  --ignore-preflight-errors Swap
 ```
 
 `--ignore-preflight-errors Swap` is actually not required as we disabled the swap initially.
+`--apiserver-cert-extra-sans` is a command-line argument for kubeadm init command in Kubernetes that specifies additional Subject Alternative Names (SANs) for the Kubernetes API server certificate. SANs are used to specify additional hostnames or IP addresses that can be used to connect to the Kubernetes API server.
+
+For example, if you have a Kubernetes cluster running on a domain name example.com, but you want to access it using an IP address as well, you can use this flag to add the IP address as an additional SAN entry in the API server certificate.
 
 For public IP address-based setup use the following init command.
 
 Here instead of --apiserver-advertise-address we use --control-plane-endpoint parameter for the API server endpoint.
 
 ```sh
-sudo kubeadm init --control-plane-endpoint=$IPADDR  --apiserver-cert-extra-sans=$IPADDR  --pod-network-cidr=$POD_CIDR --node-name $NODENAME --ignore-preflight-errors Swap
+sudo kubeadm init 
+  --control-plane-endpoint=$IPADDR  \
+  --apiserver-cert-extra-sans=$IPADDR \
+  --pod-network-cidr=$POD_CIDR \
+  --node-name $NODENAME \
+  --ignore-preflight-errors Swap
 ```
 
 All the other steps are the same as configuring the master node with private IP.
 
-> Note: You can also pass the kubeadm configs as a file when initializing the cluster. See Kubeadm Init with config file
+Alternatively, run the command below to initialize your cluster. Replace master with the hostname of your master node.
+
+```sh
+sudo kubeadm init \
+  --pod-network-cidr=10.10.0.0/16 \
+  --control-plane-endpoint=master
+```
+
+> Note: You can also pass the kubeadm configs as a file when initializing the cluster. See [Kubeadm Init with config file](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#config-file "Kubeadm Init with config file")
 
 On a successful kubeadm initialization, you should get an output with kubeconfig file location and the join command with the token as shown below. Copy that and save it to the file. we will need it for joining the worker node to the master.
+
+Now, verify the kubeconfig by executing the following kubectl command to list all the pods in the kube-system namespace.
+
+```sh
+kubectl get po -n kube-system
+```
 
 ## Some basic commands for K8S
 
