@@ -166,6 +166,7 @@ To achieve this, we need to configure the prerequisites as follows:
 First, create a modules configuration file for Kubernetes.
 
 **Configure persistent modules**
+Kubernetes requires "overlay" and "br_netfilter" Kernel modules. Therefore, you can use following group of commands to permanently enable them.
 
 ```sh
 sudo tee /etc/modules-load.d/containerd.conf <<EOF
@@ -242,11 +243,11 @@ Don't know why /where we need this
 sudo yum install -y yum-utils device-mapper-persistent-data lvm2
 ```
 
-See the `docker-installetion-rockylinux.md` file to install docker.
+**See the `docker-installetion-rockylinux.md` file to install docker.**
 
 ```sh
 sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-sudo dnf -y install containerd.io
+sudo dnf -y install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 ```
 
 After a successful installation, create a configuration directory for cotainerd
@@ -260,22 +261,60 @@ After installation, backup the original containerd configuration file and genera
 
 ```sh
 sudo mv /etc/containerd/config.toml /etc/containerd/config.toml.originalbackup
-containerd config default > /etc/containerd/config.toml
+sudo containerd config default > /etc/containerd/config.toml
 ```
 
 Edit Containerd configuration file by using vim text editor.
 
-vi /etc/containerd/config.toml
+```sh
+sudo vi /etc/containerd/config.toml
+```
+
+If this doesn't allow, Use `sudo su` to go to root. Then run the command.
+
 Locate and set SystemdCgroup parameter in this file, to enable the systemd cgroup driver for Containerd runtime.
 
+```sh
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
   ...
   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
     SystemdCgroup = true
+```
+
 Enable and start Containerd service.
 
-# systemctl enable --now containerd.service
-Created symlink /etc/systemd/system/multi-user.target.wants/containerd.service → /usr/lib/systemd/system/containerd.service.
+```sh
+systemctl enable --now containerd.service
+```
+
+**Step 6: Install Kubernetes Packages and Initialize the Control Plane**
+To initialize the control plane, log in to the master node.
+
+Check and verify that the `br_netfilter` module is loaded to the kernel:
+
+```sh
+lsmod | grep br_netfilter
+```
+
+With everything required for Kubernetes to work installed, let us go ahead and install Kubernetes packages like kubelet, kubeadm and kubectl. Create a Kubernetes repository file.
+
+Use this one. if failsthen `edit` to the next file.
+
+```sh
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+exclude=kubelet kubeadm kubectl
+EOF
+
+sudo dnf install -y {kubelet,kubeadm,kubectl} --disableexcludes=kubernetes
+```
+
+Better if use `sudo vi /etc/yum.repos.d/kubernetes.repo`
 
 ```sh
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
@@ -286,13 +325,16 @@ enabled=1
 gpgcheck=1
 gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF
-sudo yum install -y kubectl
+sudo dnf install -y {kubelet,kubeadm,kubectl} --disableexcludes=kubernetes
 ```
 
 ```sh
 kubectl version --output=json
 # or
 kubectl version --output=yaml
+```
+```sh
+kubeadm token create --print-join-command
 ```
 
 ## Some basic commands for K8S
