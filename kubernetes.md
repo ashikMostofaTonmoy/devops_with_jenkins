@@ -362,9 +362,9 @@ If you are using Private IP for master Node,
 Set the following environment variables. Replace 10.0.0.10 with the IP of your master node.
 
 ```sh
-IPADDR="10.0.0.10"
+IPADDR="192.168.30.99"
 NODENAME=$(hostname -s)
-POD_CIDR="192.168.0.0/16"
+POD_CIDR="10.0.0.0/16"
 ```
 
 If you want to use the Public IP of the master node,
@@ -382,12 +382,7 @@ Now, initialize the master node control plane configurations using the kubeadm c
 For a Private IP address-based setup use the following init command.
 
 ```sh
-sudo kubeadm init \
-  --apiserver-advertise-address=$IPADDR \ 
-  --apiserver-cert-extra-sans=$IPADDR  \
-  --pod-network-cidr=$POD_CIDR \
-  --node-name $NODENAME \
-  --ignore-preflight-errors Swap
+sudo kubeadm init --apiserver-advertise-address=$IPADDR --apiserver-cert-extra-sans=$IPADDR  --pod-network-cidr=$POD_CIDR --node-name $NODENAME --ignore-preflight-errors Swap
 ```
 
 `--ignore-preflight-errors Swap` is actually not required as we disabled the swap initially.
@@ -428,8 +423,159 @@ Now, verify the kubeconfig by executing the following kubectl command to list al
 kubectl get po -n kube-system
 ```
 
+the recommended way to install Calico is through the tigera-operator.The best part about an operator-based installation is its integration with Kubernetes because it can group Pods, Deployments, Configmaps, or services that are required for your cloud-native application and give you a single interface to manage and deploy them. With the help of the operator SDK, the tigera-operator can configure, maintain or upgrade your Calico installation.
+
+But regardless of the installation process, every CNI will have to populate its config file in /etc/cni/net.d folder and CNI binaries in /opt/cni/bin folder.
+
+Use the following command to install the tigera-operator in your cluster.
+```sh
+kubectl create -f https://projectcalico.docs.tigera.io/archive/v3.24/manifests/tigera-operator.yaml
+```
+Use the following command to check the operator deployment.
+```sh
+kubectl get deployments -n tigera-operator  tigera-operator
+```
+Tigera-operator manifest didn't just create a simple Pod in your cluster. It extended your cluster capabilities by using Custom Resource Definitions. Use the following command to check the CRDs.
+```sh
+kubectl get crd
+```
+your cluster now offers a `tigerastatuses.operator.tigera.io` CRD, which can query the health of ProjectCalico components installed on your cluster. At this stage, the operator will constantly look for the `Installation` resource to figure out how to configure this Calico installation.
+
+Use the following command to instruct the tigera-operator on installing Calico from the lab's pre-prepared file.
+```sh
+kubectl apply -f calico-configs.yaml
+```
+Starting with new capabilities, let's use the tigerastatus command to query the state of ProjectCalico components.
+
+```sh
+kubectl get tigerastatus
+```
+
+The tigera-operator adds a couple of other components as part of the Calico ecosystem. These components play a role in advanced features such as BGP routing, extended security policies, networking overlays such as VXLAN and IP-IP, Isto, and wireguard integration for service mesh and traffic encryption.
+
+Calico has a pluggable data-plane architecture and multiple data planes based on IPtables, eBPF technology, and windows HNS that allows you to be in charge of your Software-defined network.
+
+In Calico's case, these advanced features are implemented by the `calico-node` Pods that are part of a `calico-node` daemonset.
+
+Use the following command to explore the daemonset in detail.
+
+```sh
+kubectl describe -n calico-system daemonset/calico-node
+```
+Let's take a closer look at the previous output. At the end of the output within the Volumes section, two directories have been shared with the host.
+
+```sh
+
+   cni-bin-dir:
+    Type:          HostPath (bare host directory volume)
+    Path:          /opt/cni/bin
+    HostPathType:
+   cni-net-dir:
+    Type:          HostPath (bare host directory volume)
+    Path:          /etc/cni/net.d
+    HostPathType:
+```
+These two are bidirectional mounts to put the CNI config and binaries in place.
+
+Inside the environment section, you should see these two lines that indicate the Calico CNI `configlist` name and where it is located.
+
+```sh
+      CNI_CONF_NAME:            10-calico.conflist
+      CNI_NET_DIR:              /etc/cni/net.d
+```
+Moving on, the content of the `10-calico.conflist` is stored in a configmap. Use the following command to examine the `cni-config` contents.
+
+
+
+
+<!-- 
+**The next step is to install Calico CNI (Container Network Interface).**
+It is an opensource project used to provide container networking and security. After Installing Calico CNI, nodes state will change to Ready state, DNS service inside the cluster would be functional and containers can start communicating with each other.
+
+Calico provides scalability, high performance, and interoperability with existing Kubernetes workloads. It can be deployed on-premises and on popular cloud technologies such as Google Cloud, AWS and Azure.
+
+To install Calico CNI, run the following command from the master node
+
+```sh
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/calico.yaml
+# calico version always changes. make sure its latest version
+```
+
+First, install the operator on your cluster.
+
+```sh
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/tigera-operator.yaml
+```
+
+Download the custom resources necessary to configure Calico
+
+```sh
+curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/custom-resources.yaml -O
+```
+
+If you wish to customize the Calico install, customize the downloaded custom-resources.yaml manifest locally.
+
+Create the manifest in order to install Calico.
+
+```sh
+kubectl create -f custom-resources.yaml
+```
+
+To confirm if the pods have started, run the command:
+
+```sh
+kubectl get pods -n kube-system
+```
+
+**Configure a node to act as a route reflector**
+Calico nodes can be configured to act as route reflectors. To do this, each node that you want to act as a route reflector must have a cluster ID - typically an unused IPv4 address.
+
+To configure a node to be a route reflector with cluster ID 244.0.0.1, run the following command.
+
+```sh
+kubectl annotate node my-node projectcalico.org/RouteReflectorClusterID=244.0.0.1
+```
+
+Typically, you will want to label this node to indicate that it is a route reflector, allowing it to be easily selected by a BGPPeer resource. You can do this with kubectl. For example:
+
+```sh
+kubectl label node my-node route-reflector=true
+```
+
+[Configuring Route Reflectors in Calico](https://www.tigera.io/blog/configuring-route-reflectors-in-calico/)
+
+```sh
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/calicoctl.yaml
+```
+
+**Installing `calicoctl`**
+You can then run commands using kubectl as shown below.
+
+```sh
+kubectl exec -ti -n kube-system calicoctl -- /calicoctl get profiles -o wide
+```
+
+We recommend setting an alias as follows.
+
+```sh
+alias calicoctl="kubectl exec -i -n kube-system calicoctl -- /calicoctl"
+```
+
+```sh
+kubectl annotate node master projectcalico.org/RouteReflectorClusterID=244.0.0.1
+``` -->
+
 ## Some basic commands for K8S
 
+Use the following command to determine your node `STATUS.`
+
+```sh
+kubectl get node
+```
+Use the following command to get more details about the control-plane node status.
+```sh
+kubectl describe node kind-control-plane
+```
 ```sh
 kubectl get pod
 kubectl get services
@@ -499,6 +645,7 @@ This will change default name space to custome namespace. If you need to check r
 
 ```sh
 kubectl get pod -n <default/name-space>
+kubectl get pods --all-namespaces # for all namespaces
 ```
 
 ### Deploying the Dashboard UI
