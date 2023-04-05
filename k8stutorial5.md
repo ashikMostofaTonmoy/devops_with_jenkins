@@ -46,7 +46,7 @@ While the default dataplane is set to IPTables because of compatibility, you are
 Based on the eBPF technology, Calico's eBPF dataplane implements a software-defined networking solution for your Kubernetes cluster that can push the boundaries of speed and minimal resource utilization in ways that were impossible before. On top of these improvements, you will also receive features such as source IP preservation, Direct Server Return, and reduced initial packet latency.
 
 Use the following command to instruct Calico how to communicate directly with the Kubernetes API manager.
-
+```sh
 kubectl apply -f - <<EOF
 kind: ConfigMap
 apiVersion: v1
@@ -57,6 +57,7 @@ data:
   KUBERNETES_SERVICE_HOST: "kind-control-plane"
   KUBERNETES_SERVICE_PORT: "6443"
 EOF
+```
 Use the following command to change the cluster dataplane to Calico's eBPF.
 
 kubectl patch installation.operator.tigera.io default --type merge -p '{"spec":{"calicoNetwork":{"linuxDataplane":"BPF", "hostPorts":null}}}'

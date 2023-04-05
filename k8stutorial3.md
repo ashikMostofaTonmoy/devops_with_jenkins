@@ -7,13 +7,13 @@ Some Kubernetes CNI projects extend the Kubernetes Security features by adding t
 For example, on top of a policy engine, Calico also offers multiple specialized security resources that provide an elegant way to lock down your cluster and only allow the expected traffic to flow. As a result, you can integrate these security resources with projects such as Istio or use them to skip the vendor lockdown by using the same syntax in any environment.
 
 
-Calico Global Security Policy Resource
+**Calico Global Security Policy Resource**
 Calico provides a GlobalNetworkPolicy resource that can affect your cluster as a whole. This resource type can affect namespace (traffic inside a cluster) and non-namespace (external and NIC) traffic and greatly extend the security capabilities that your cluster can offer.
 
 Note: In this policy, traffic from non-namespaced and kube-system, calico-system, calico-apiserver namespaces are excluded deliberately to simplify the flow of content.
 
 Use the following command to establish isolation.
-
+```sh
 kubectl apply -f - <<EOF
 apiVersion: projectcalico.org/v3
 kind: GlobalNetworkPolicy
@@ -32,6 +32,7 @@ spec:
         ports:
           - 53
 EOF
+```
 A Calico Global Security Policy also affects the resources that you will create in the future. Any namespace you will create in the future will be affected by the security posture you have implemented with your global policies.
 
 

@@ -11,7 +11,7 @@ Calico provides a GlobalNetworkPolicy resource that can affect your cluster as a
 Note: In this policy, traffic from non-namespaced and kube-system, calico-system, calico-apiserver namespaces are excluded deliberately to simplify the flow of content.
 
 Use the following command to establish isolation.
-
+```sh
 kubectl apply -f - <<EOF
 apiVersion: projectcalico.org/v3
 kind: GlobalNetworkPolicy
@@ -30,6 +30,7 @@ spec:
         ports:
           - 53
 EOF
+```
 A Calico Global Security Policy also affects the resources that you will create in the future. Any namespace you will create in the future will be affected by the security posture you have implemented with your global policies.
 
 

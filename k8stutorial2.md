@@ -5,7 +5,7 @@ You can take multiple steps to battle this and limit the attack surface. Zero-tr
 In this section, you will learn about the Zero-trust security posture and Kubernetes Network Policy resource.
 
 
-Zero Trust Security posture
+**Zero Trust Security posture**
 Before starting to write policies, let's talk about security.
 
 Zero trust is an effective and popular security posture. While establishing Zero trust goes beyond network policy, it is worth noting that its principles could benefit any environment.
