@@ -335,7 +335,7 @@ kubectl version --output=yaml
 ```
 
 **Setup Worker Node**
-For Worker node
+For Worker node all the steps before is same except `Step 6`. you only need to get the token from master node and add the token to worker node. Following command on master node will generate the command to connect worker node.
 
 ```sh
 kubeadm token create --print-join-command
@@ -388,14 +388,14 @@ sudo kubeadm init --apiserver-advertise-address=$IPADDR --apiserver-cert-extra-s
 `--ignore-preflight-errors Swap` is actually not required as we disabled the swap initially.
 `--apiserver-cert-extra-sans` is a command-line argument for kubeadm init command in Kubernetes that specifies additional Subject Alternative Names (SANs) for the Kubernetes API server certificate. SANs are used to specify additional hostnames or IP addresses that can be used to connect to the Kubernetes API server.
 
-For example, if you have a Kubernetes cluster running on a domain name example.com, but you want to access it using an IP address as well, you can use this flag to add the IP address as an additional SAN entry in the API server certificate.
+For example, if you have a Kubernetes cluster running on a domain name `example.com`, but you want to access it using an IP address as well, you can use this flag to add the IP address as an additional SAN entry in the API server certificate.
 
 For public IP address-based setup use the following init command.
 
 Here instead of --apiserver-advertise-address we use --control-plane-endpoint parameter for the API server endpoint.
 
 ```sh
-sudo kubeadm init 
+sudo kubeadm init \
   --control-plane-endpoint=$IPADDR  \
   --apiserver-cert-extra-sans=$IPADDR \
   --pod-network-cidr=$POD_CIDR \
@@ -415,7 +415,44 @@ sudo kubeadm init \
 
 > Note: You can also pass the kubeadm configs as a file when initializing the cluster. See [Kubeadm Init with config file](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#config-file "Kubeadm Init with config file")
 
+To start using your cluster, you need to run the following as a regular user:
+
+```sh
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+Alternatively, if you are the root user, you can run:
+
+```sh
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+```
+
+You should now deploy a pod network to the cluster.
+
+```sh
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+```
+
 On a successful kubeadm initialization, you should get an output with kubeconfig file location and the join command with the token as shown below. Copy that and save it to the file. we will need it for joining the worker node to the master.
+
+You can now join any number of `control-plane nodes` by copying certificate authorities
+and service account keys on each node and then running the following as root:
+
+```sh
+  kubeadm join 192.168.1.104:6443 --token lw4xrh.kgw5ty1spl9cduvl \
+        --discovery-token-ca-cert-hash sha256:fa04cc2bd08f85ab0a17bbb813aba144eb1700af1e6ae2f7a07db245ff41e6a1 \
+        --control-plane 
+```
+
+Then you can join any number of `worker nodes` by running the following on each as root:
+
+```sh
+kubeadm join 192.168.1.104:6443 --token lw4xrh.kgw5ty1spl9cduvl \
+        --discovery-token-ca-cert-hash sha256:fa04cc2bd08f85ab0a17bbb813aba144eb1700af1e6ae2f7a07db245ff41e6a1 
+```
 
 Now, verify the kubeconfig by executing the following kubectl command to list all the pods in the kube-system namespace.
 
@@ -423,6 +460,50 @@ Now, verify the kubeconfig by executing the following kubectl command to list al
 kubectl get po -n kube-system
 ```
 
+**Step 7: Setup cluster network**
+
+1. First, install the operator on your cluster.
+
+```sh
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/tigera-operator.yaml
+```
+
+2. Download the custom resources necessary to configure Calico
+
+```sh
+curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/custom-resources.yaml -O
+```
+
+>If you wish to customize the Calico install Like the `CIDR` blocks, customize the downloaded custom-resources.yaml manifest locally.
+
+3. Create the manifest in order to install Calico.
+
+```sh
+kubectl create -f custom-resources.yaml
+```
+
+4. [Install `calicoctl`](https://docs.tigera.io/calico/latest/operations/calicoctl/install) command line tool to manage Calico resources and perform administrative functions.
+
+In the host, open a terminal prompt, and navigate to the location where you want to install the binary.
+TIP
+Consider navigating to a location that's in your `PATH`. For example, `/usr/local/bin/`.
+
+Use the following command to download the calicoctl binary.
+
+```sh
+curl -L https://github.com/projectcalico/calico/releases/latest/download/calicoctl-linux-amd64 -o calicoctl
+```
+
+Set the file to be executable.
+
+```sh
+chmod +x ./calicoctl
+sudo mv calicoctl /usr/local/bin/
+```
+
+```sh
+kubectl annotate node my-node projectcalico.org/RouteReflectorClusterID=244.0.0.1
+```
 <!-- 
 **The next step is to install Calico CNI (Container Network Interface).**
 It is an opensource project used to provide container networking and security. After Installing Calico CNI, nodes state will change to Ready state, DNS service inside the cluster would be functional and containers can start communicating with each other.
@@ -436,31 +517,7 @@ kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/
 # calico version always changes. make sure its latest version
 ```
 
-First, install the operator on your cluster.
-
-```sh
-kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/tigera-operator.yaml
-```
-
-Download the custom resources necessary to configure Calico
-
-```sh
-curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/custom-resources.yaml -O
-```
-
-If you wish to customize the Calico install, customize the downloaded custom-resources.yaml manifest locally.
-
-Create the manifest in order to install Calico.
-
-```sh
-kubectl create -f custom-resources.yaml
-```
-
 To confirm if the pods have started, run the command:
-
-```sh
-kubectl get pods -n kube-system
-```
 
 **Configure a node to act as a route reflector**
 Calico nodes can be configured to act as route reflectors. To do this, each node that you want to act as a route reflector must have a cluster ID - typically an unused IPv4 address.
