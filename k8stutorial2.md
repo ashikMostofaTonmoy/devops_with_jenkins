@@ -15,22 +15,24 @@ Usually, we assume that threats are external, so we strengthen our security prot
 That is why the zero-trust posture implements isolation as a form of containing a compromise for when it happens.
 
 
-Kubernetes Network Policy
+**Kubernetes Network Policy**
 Kubernetes has a built-in resource that can shape the security posture of your cloud-native environment and workloads. However, like networking, Kubernetes doesn't enforce these policies and delegates the responsibility to the CNI plugins, so it is vital to use a CNI that offers such capability if you are interested in security. The network plugin implements network policies. To use network policies, you must use a networking solution that supports NetworkPolicy. Creating a NetworkPolicy resource without a controller implementing it will have no effect.
 
 KNP is a unique resource that can restrict networking communication for resources in Kubernetes.
 
 KNP YAML file starts with the following header.
-
+```sh
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
+```
 Like any Kubernetes resources, you can define a name and a namespace for your policies in the metadata section of the YAML file.
 
 Note: It is important to note that KNP resources apply to namespaces, which means you have to create a policy in each namespace to secure a cluster with multiple namespaces.
-
+```sh
 metadata:
   name: test-network-policy
   namespace: default
+```  
 Specification podSelector, policyTypes, ingress and egress.
 
 
@@ -63,7 +65,7 @@ KNP Default Deny
 Policies can offer isolation, but the critical fact about policies is that these resources should be tailored to your needs.
 
 Use the following command to isolate the yaobank-database namespace.
-
+```sh
 kubectl apply -f - <<EOF
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -76,6 +78,7 @@ spec:
  - Ingress
  - Egress
 EOF
+```
 Note: It is possible to omit the namespace section from your policies. However, since a KNP resource is bound to a namespace, it will automatically get the default namespace value.
 
 

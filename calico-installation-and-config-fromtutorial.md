@@ -35,13 +35,16 @@ Starting with new capabilities, let's use the tigerastatus command to query the 
 ```sh
 kubectl get tigerastatus
 ```
+
 expected output:
+
 ```sh
 
 NAME        AVAILABLE   PROGRESSING   DEGRADED   SINCE
 apiserver   True        False         False      5s
 calico      True        False         False      40s
 ```
+
 The tigera-operator adds a couple of other components as part of the Calico ecosystem. These components play a role in advanced features such as BGP routing, extended security policies, networking overlays such as VXLAN and IP-IP, Isto, and wireguard integration for service mesh and traffic encryption.
 
 Calico has a pluggable data-plane architecture and multiple data planes based on IPtables, eBPF technology, and windows HNS that allows you to be in charge of your Software-defined network.
@@ -88,6 +91,7 @@ Use the node query command again.
 ```sh
 kubectl get node
 ```
+
 You should see a similar result, indicating that all nodes are ready.
 
 ```sh
