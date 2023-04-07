@@ -35,3 +35,9 @@ containerd.io           : Provides the container runtime (runc)
 docker-compose-plugin   : A plugin that provides the 'docker compose' subcommand 
 
 ```
+
+**some extrea packeges:**
+
+```sh
+sudo dnf install epel-release -y
+```

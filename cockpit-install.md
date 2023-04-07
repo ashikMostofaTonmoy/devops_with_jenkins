@@ -5,9 +5,9 @@ By default cockpit is usually shipped with rocky. Still if its not installed by 
 process is taken from https://vitux.com/how-to-install-cockpit-on-rocky-linux-8/
 
 ```sh
-sudo dnf update
-sudo dnf install epel-release
-sudo dnf install cockpit
+sudo dnf update -y
+sudo dnf install epel-release -y
+sudo dnf install cockpit -y
 sudo systemctl start cockpit.socket
 sudo systemctl enable cockpit.socket
 sudo systemctl status cockpit.socket
