@@ -96,6 +96,13 @@ Alternativly we can do it like this:
 sudo hostnamectl set-hostname master # for master node
 sudo hostnamectl set-hostname worker-1 # for worker node
 
+sudo tee /etc/hosts <<EOF
+192.168.30.95 master
+192.168.30.96 worker01
+192.168.30.97 worker02
+EOF
+
+# or like this
 sudo cat <<EOF>> /etc/hosts
 192.168.100.234 master
 192.168.100.235 worker01
@@ -104,6 +111,7 @@ EOF
 
 # or like this
 sudo echo 192.168.116.131 kubemaster-01.centlinux.com kubemaster-01 >> /etc/hosts
+
 ```
 
 Save and exit the configuration file. Next, install the traffic control utility package:

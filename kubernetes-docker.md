@@ -61,9 +61,13 @@ Step 4. Configure Docker Daemon for cgroups management & Start Docker
 
 4.a.. Create directory 
 ```sh
-$ sudo mkdir /etc/docker
+$ sudo mkdir -p /etc/docker
 ```
 4.b.. Copy the below contents in this file.. `/etc/docker/daemon.json`
+
+```sh
+sudo vi /etc/docker/daemon.json
+```
 
 Content:
 ```sh
