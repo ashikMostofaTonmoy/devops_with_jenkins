@@ -1,0 +1,1 @@
+sudo setsebool haproxy_connect_any 1
