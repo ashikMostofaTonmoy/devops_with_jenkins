@@ -6,43 +6,43 @@ spec:
   hosts:
     - {
         name: master1,
-        address: 192.168.30.122,
-        internalAddress: 192.168.30.122,
+        address: 192.168.1.102,
+        internalAddress: 192.168.1.102,
         user: root,
         password: "admin",
       }
     - {
         name: master2,
-        address: 192.168.30.123,
-        internalAddress: 192.168.30.123,
+        address: 192.168.1.104,
+        internalAddress: 192.168.1.104,
         user: root,
         password: "admin",
       }
     - {
         name: worker1,
-        address: 192.168.30.126,
-        internalAddress: 192.168.30.126,
+        address: 192.168.1.106,
+        internalAddress: 192.168.1.106,
         user: root,
         password: "admin",
       }
     - {
         name: worker2,
-        address: 192.168.30.110,
-        internalAddress: 192.168.30.110,
+        address: 192.168.1.107,
+        internalAddress: 192.168.1.107,
         user: root,
         password: "admin",
       }
     - {
         name: lb1,
-        address: 192.168.30.108,
-        internalAddress: 192.168.30.110,
+        address: 192.168.1.108,
+        internalAddress: 192.168.1.108,
         user: root,
         password: "admin",
       }
     - {
         name: lb2,
-        address: 192.168.30.109,
-        internalAddress: 192.168.30.110,
+        address: 192.168.1.109,
+        internalAddress: 192.168.1.109,
         user: root,
         password: "admin",
       }
@@ -62,7 +62,7 @@ spec:
     # internalLoadbalancer: haproxy
 
     domain: lb.kubesphere.local
-    address: "192.168.30.221"
+    address: "192.168.1.221"
     port: 6443
   kubernetes:
     version: v1.24
