@@ -58,6 +58,12 @@ backend kube-apiserver
     server kube-apiserver-2 192.168.1.104:6443 check # Replace the IP address with your own.
 ```
 
+haproxy error solve on centos7
+
+```sh
+sudo setsebool haproxy_connect_any 1
+```
+
 keepalived config
 
 ```sh
