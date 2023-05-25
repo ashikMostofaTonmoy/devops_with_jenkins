@@ -704,6 +704,77 @@ kubectl get all -n <namespace-name>
 kubectl get configmap
 ```
 
+### Get docker login cred
+
+The Structure of Secret Object
+The Kubernetes Secret object has a special type of kind for private registries as;
+
+```sh
+type: kubernetes.io/dockercfg
+type: kubernetes.io/dockerconfigjson
+```
+
+Let’s remember the structure of Secret object:
+
+```sh
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret-registry
+type: kubernetes.io/dockercfg
+data:
+  .dockercfg: |
+    "<base64 encoded ~/.docker/config.json-file>"
+```
+or
+
+```sh
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret-registry
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: |
+    "<base64 encoded ~/.docker/config.json-file>"
+```
+**Create Secret Object from login Command**
+When we login into the container registry, the credentials are saved in the `~/.docker/config.json` file. We can get the required information from this file and can place it inside the `Secret` file `data` portion.
+
+For AWS ECR;
+
+```sh
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <your-id>.dkr.ecr.us-east-1.amazonaws.com
+```
+
+For hosted private container registry;
+
+```sh
+docker login -u username -p password  https://private-registry
+```
+
+Firstly, after logging in to the container registry, create secret data from the stored data as follows;
+
+```sh
+cat ~/.docker/config.json | base64
+```
+
+You can now copy the output as secret data and place it in the file's data portion. Next, give it a try in the K8s cluster.
+
+**Create Secret Object with kubectl Command**
+It is also possible to create the Secret object with the help of kubectl command. They are listed as follows.
+
+Secondly, you can also create the `Secret` object from `~/.docker/config.json` directly as follows;
+
+Go to home directory. then run the following.
+
+```sh
+kubectl create secret generic registrypullsecret \
+  --from-file=.dockerconfigjson=.docker/config.json \
+  --type=kubernetes.io/dockerconfigjson
+```
+
+
 > All of the codes are in here
 > <https://gitlab.com/ashikMostofaTonmoy/youtube-tutorial-series-from-nana>
 > Microservice - 149

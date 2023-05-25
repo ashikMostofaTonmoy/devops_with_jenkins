@@ -51,61 +51,61 @@ Vagrant.configure(2) do |config|
 
   end
 
-  (1..WORKER_NODE_COUNT).each do |i|
+#   (1..WORKER_NODE_COUNT).each do |i|
 
-    config.vm.define "worker#{i}" do |node|
+#     config.vm.define "worker#{i}" do |node|
 
-      node.vm.box               = VAGRANT_BOX
-      node.vm.box_check_update  = false
-      node.vm.box_version       = VAGRANT_BOX_VERSION
-      node.vm.hostname          = "worker#{i}.example.com"
+#       node.vm.box               = VAGRANT_BOX
+#       node.vm.box_check_update  = false
+#       node.vm.box_version       = VAGRANT_BOX_VERSION
+#       node.vm.hostname          = "worker#{i}.example.com"
 
-      node.vm.network "public_network" 
-      # node.vm.network "private_network", ip: "172.16.16.11#{i}"
+#       node.vm.network "public_network" 
+#       # node.vm.network "private_network", ip: "172.16.16.11#{i}"
 
-      node.vm.provider :virtualbox do |v|
-        v.name    = "worker#{i}"
-        v.memory  = WORKER_NODE_MEMORY
-        v.cpus    = WORKER_NODE_CPUS
-      end
+#       node.vm.provider :virtualbox do |v|
+#         v.name    = "worker#{i}"
+#         v.memory  = WORKER_NODE_MEMORY
+#         v.cpus    = WORKER_NODE_CPUS
+#       end
 
-      node.vm.provider :libvirt do |v|
-        v.nested  = true
-        v.memory  = WORKER_NODE_MEMORY
-        v.cpus    = WORKER_NODE_CPUS
-      end
+#       node.vm.provider :libvirt do |v|
+#         v.nested  = true
+#         v.memory  = WORKER_NODE_MEMORY
+#         v.cpus    = WORKER_NODE_CPUS
+#       end
 
-    end
+#     end
 
-  end
+#   end
 
-  (1..LB_NODE_COUNT).each do |i|
+#   (1..LB_NODE_COUNT).each do |i|
 
-    config.vm.define "lb#{i}" do |node|
+#     config.vm.define "lb#{i}" do |node|
 
-      node.vm.box               = VAGRANT_BOX
-      node.vm.box_check_update  = false
-      node.vm.box_version       = VAGRANT_BOX_VERSION
-      node.vm.hostname          = "lb#{i}.example.com"
+#       node.vm.box               = VAGRANT_BOX
+#       node.vm.box_check_update  = false
+#       node.vm.box_version       = VAGRANT_BOX_VERSION
+#       node.vm.hostname          = "lb#{i}.example.com"
 
-      node.vm.network "public_network" 
-      # node.vm.network "private_network", ip: "172.16.16.12#{i}"
+#       node.vm.network "public_network" 
+#       # node.vm.network "private_network", ip: "172.16.16.12#{i}"
 
-      node.vm.provider :virtualbox do |v|
-        v.name    = "lb#{i}"
-        v.memory  = LB_NODE_MEMORY
-        v.cpus    = LB_NODE_CPUS
-      end
+#       node.vm.provider :virtualbox do |v|
+#         v.name    = "lb#{i}"
+#         v.memory  = LB_NODE_MEMORY
+#         v.cpus    = LB_NODE_CPUS
+#       end
 
-      node.vm.provider :libvirt do |v|
-        v.nested  = true
-        v.memory  = LB_NODE_MEMORY
-        v.cpus    = LB_NODE_CPUS
-      end
+#       node.vm.provider :libvirt do |v|
+#         v.nested  = true
+#         v.memory  = LB_NODE_MEMORY
+#         v.cpus    = LB_NODE_CPUS
+#       end
 
-    end
+#     end
 
-  end
+#   end
 
 end
 
