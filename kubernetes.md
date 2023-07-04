@@ -592,6 +592,7 @@ kubectl describe pod <pod-name>
 kubectl logs <pod-name> # for debugging
 kubectl exec -it <pod name> -- / bin/bash # to get into the container
 kubectl delete deployment <deployment-name> # to delete deployment 
+kubectl delete pods -n <namespace> <pod-name> --grace-period=0 --force
 
 # but mainly we use to apply all this 
 kubectl apply -f <filename.yaml> #to up  the deployment from file
@@ -726,6 +727,7 @@ data:
   .dockercfg: |
     "<base64 encoded ~/.docker/config.json-file>"
 ```
+
 or
 
 ```sh
@@ -738,6 +740,7 @@ data:
   .dockerconfigjson: |
     "<base64 encoded ~/.docker/config.json-file>"
 ```
+
 **Create Secret Object from login Command**
 When we login into the container registry, the credentials are saved in the `~/.docker/config.json` file. We can get the required information from this file and can place it inside the `Secret` file `data` portion.
 
@@ -774,6 +777,18 @@ kubectl create secret generic registrypullsecret \
   --type=kubernetes.io/dockerconfigjson
 ```
 
+When creating applications, you may have a Docker registry that requires authentication. In order for the nodes to pull images on your behalf, they have to have the credentials. You can provide this information by creating a dockercfg secret and attaching it to your service account.
+
+```sh
+kubectl create secret docker-registry NAME --docker-username=user --docker-password=password --docker-email=email [--docker-server=string] [--from-literal=key1=value1] [--dry-run]
+```
+
+Examples
+If you don't already have a .dockercfg file, you can create a dockercfg secret directly by using:
+
+```sh
+kubectl create secret docker-registry my-secret --docker-server=DOCKER_REGISTRY_SERVER --docker-username=DOCKER_USER --docker-password=DOCKER_PASSWORD --docker-email=DOCKER_EMAIL
+```
 
 > All of the codes are in here
 > <https://gitlab.com/ashikMostofaTonmoy/youtube-tutorial-series-from-nana>
