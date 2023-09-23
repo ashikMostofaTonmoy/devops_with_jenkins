@@ -472,23 +472,23 @@ kubectl get po -n kube-system
 
 1. First, install the operator on your cluster.
 
-```sh
-kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/tigera-operator.yaml
-```
+  ```sh
+  kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/tigera-operator.yaml
+  ```
 
 2. Download the custom resources necessary to configure Calico
 
-```sh
-curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/custom-resources.yaml -O
-```
+  ```sh
+  curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/custom-resources.yaml -O
+  ```
 
 >If you wish to customize the Calico install Like the `CIDR` blocks, customize the downloaded custom-resources.yaml manifest locally.
 
 3. Create the manifest in order to install Calico.
 
-```sh
-kubectl create -f custom-resources.yaml
-```
+  ```sh
+  kubectl create -f custom-resources.yaml
+  ```
 
 4. [Install `calicoctl`](https://docs.tigera.io/calico/latest/operations/calicoctl/install) command line tool to manage Calico resources and perform administrative functions.
 
@@ -788,6 +788,24 @@ If you don't already have a .dockercfg file, you can create a dockercfg secret d
 
 ```sh
 kubectl create secret docker-registry my-secret --docker-server=DOCKER_REGISTRY_SERVER --docker-username=DOCKER_USER --docker-password=DOCKER_PASSWORD --docker-email=DOCKER_EMAIL
+```
+
+#### Tresting Services directly to localmachine
+
+```sh
+kubectl port-forward service/<service-name> <local-machine-port>:<Service-port> -n <namespace>
+
+# example
+kubectl port-forward service/api-gateway-service 8888:80 -n mynamespace
+```
+
+If want to run in background mode
+
+```sh
+kubectl port-forward service/<service-name> <local-machine-port>:<Service-port> -n <namespace> &
+# added '&' at the end to run anything in background
+# example
+kubectl port-forward service/api-gateway-service 8888:80 -n mynamespace &
 ```
 
 > All of the codes are in here
