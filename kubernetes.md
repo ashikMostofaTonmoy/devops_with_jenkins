@@ -797,6 +797,7 @@ kubectl port-forward service/<service-name> <local-machine-port>:<Service-port> 
 
 # example
 kubectl port-forward service/api-gateway-service 8888:80 -n mynamespace
+kubectl port-forward --address 0.0.0.0 service/traefik 8000:8000 8080:8080 443:4443 -n testns 
 ```
 
 If want to run in background mode
