@@ -1,13 +1,46 @@
 # Enable HTTP2 on Apache
 
 ## Prerequisits
-list existion versions installed
+
+> **Must  install `php<version>-fpm` otherwise php config will break the site. If not installed make sure it's installed.**
+
+list existing versions installed
 
 ```sh
 sudo update-alternatives --list php
 ```
 
-## **Must  install `php*-fpm` otherwise php config will break the site.**
+Cheche if php fpm version is installed. Let's assume php is installed. Cause if not installed we can just install directly.
+```sh
+$ php -v
+
+PHP 7.4.3-4ubuntu2.22 (cli) (built: May  1 2024 10:11:33) ( NTS )
+Copyright (c) The PHP Group
+Zend Engine v3.4.0, Copyright (c) Zend Technologies
+    with Zend OPcache v7.4.3-4ubuntu2.22, Copyright (c), by Zend Technologies
+```
+
+So, fpm can be checked by
+```sh
+$ sudo systemctl status php7.4-fpm
+
+● php7.4-fpm.service - The PHP 7.4 FastCGI Process Manager
+     Loaded: loaded (/lib/systemd/system/php7.4-fpm.service; enabled; vendor preset: enabled)
+     Active: active (running) since Wed 2024-05-15 12:07:04 UTC; 16h ago
+       Docs: man:php-fpm7.4(8)
+    Process: 11358 ExecStartPost=/usr/lib/php/php-fpm-socket-helper install /run/php/php-fpm.sock /etc/php/7.4/fpm/pool.>
+   Main PID: 11354 (php-fpm7.4)
+     Status: "Processes active: 0, idle: 3, Requests: 66, slow: 0, Traffic: 0req/sec"
+      Tasks: 4 (limit: 4618)
+     Memory: 244.5M
+     CGroup: /system.slice/php7.4-fpm.service
+             ├─11354 php-fpm: master process (/etc/php/7.4/fpm/php-fpm.conf)
+             ├─11356 php-fpm: pool www
+             ├─11357 php-fpm: pool www
+             └─11628 php-fpm: pool www
+```
+
+If this doesn't show any output then fpm is not installed.
 
 First install or update to desired php version.
 
