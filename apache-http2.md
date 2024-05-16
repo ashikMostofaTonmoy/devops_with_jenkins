@@ -108,6 +108,8 @@ cd /etc/apache2
 grep -r Protocols .
 ```
 
+Check if `Protocols h2 h2c http/1.1` is available in the output. If this is present this should do the trick. If it doesn't update output and forcefully `http/1.1` to be removed then do the following.
+
 In our case `/etc/apache2/mods-available/http2.conf` is the file. Now edit the file.
 
 ```sh
